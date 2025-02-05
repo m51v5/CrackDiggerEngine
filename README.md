@@ -14,8 +14,8 @@ The `CrackDiggerEngine` library is designed to search for game information acros
   - [clsGames](#clsgames)
 - [Methods](#methods)
   - [FindGameAsync](#findgameasync)
-  - [ConvertAllGamesDataAsync](#convertallgamesdataasync)
-  - [ConvertSingleGameDataAsync](#convertsinglegamedataasync)
+  - [MapAllGamesDataAsync](#mapallgamesdataasync)
+  - [MapConvertSingleGameDataAsync](#mapsinglegamedataasync)
 
 ---
 
