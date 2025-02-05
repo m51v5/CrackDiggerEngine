@@ -1,4 +1,4 @@
-# CrackDiggerEngine v1.0.0 Documentation
+# CrackDiggerEngine v1.0.0
 
 ## Overview
 The `CrackDiggerEngine` library is designed to search for game information across several supported sites. It offers methods to retrieve game details and convert data to JSON-like structures.
