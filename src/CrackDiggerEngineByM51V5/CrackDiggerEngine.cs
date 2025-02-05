@@ -18,6 +18,8 @@ namespace CrackDiggerEngineByM51V5
             fitgirl_repacksDoteSite,
             apunkagamesDotCom,
             mrpcgamerDotNet,
+            ovaGamesDotCom,
+            steamUnlockedDotPro,
         }
 
         /// <summary>
@@ -31,6 +33,8 @@ namespace CrackDiggerEngineByM51V5
             { enSiteUri.fitgirl_repacksDoteSite, clsFitgirlRepacksDotSite.siteUrl },
             { enSiteUri.apunkagamesDotCom, clsApunkagameDotCom.siteUrl },
             { enSiteUri.mrpcgamerDotNet, clsMrpcgamerDotNet.siteUrl },
+            { enSiteUri.ovaGamesDotCom, clsOvagamesDotCom.siteUrl },
+            { enSiteUri.steamUnlockedDotPro, clsSteamunlockedDotPro.siteUrl },
         };
 
         /// <summary>
@@ -44,6 +48,8 @@ namespace CrackDiggerEngineByM51V5
             { enSiteUri.fitgirl_repacksDoteSite, () => new clsFitgirlRepacksDotSite() },
             { enSiteUri.apunkagamesDotCom, () => new clsApunkagameDotCom() },
             { enSiteUri.mrpcgamerDotNet, () => new clsMrpcgamerDotNet() },
+            { enSiteUri.ovaGamesDotCom, () => new clsOvagamesDotCom() },
+            { enSiteUri.steamUnlockedDotPro, () => new clsSteamunlockedDotPro() },
         };
         #endregion
 
@@ -81,6 +87,7 @@ namespace CrackDiggerEngineByM51V5
         }
         #endregion
 
+        #region Find Game Methods
         /// <summary>
         ///     Find a game in any supported site.
         /// </summary>
@@ -140,7 +147,10 @@ namespace CrackDiggerEngineByM51V5
                         {
                             clsGameDataObject gameData = await site.GetSingleGameDataAsync(item);
 
-                            data.Add(gameData);
+                            if (gameData != null)
+                            {
+                                data.Add(gameData);
+                            }
                         }
 
                         Games.isSuccess = true;
@@ -160,6 +170,49 @@ namespace CrackDiggerEngineByM51V5
             }
             return Games;
         }
+
+        /// <summary>
+        ///     Search in multiple sites
+        /// </summary>
+        /// <param name="sitesUri">
+        ///     List of sites you want to search into.
+        /// </param>
+        /// <param name="keyword">the game you want to find.</param>
+        /// <returns> Multiple sites results as "Dictionary<enSiteUri, clsGames>". </returns>
+        public static async Task<Dictionary<enSiteUri, clsGames>> FindGameFilteredSitesAsync(List<enSiteUri> sitesUri, string keyword)
+        {
+            Dictionary<enSiteUri, clsGames> games = new Dictionary<enSiteUri, clsGames>();
+
+            foreach (enSiteUri site in sitesUri)
+            {
+                if (!games.ContainsKey(site))
+                {
+                    clsGames singleSiteGames = await FindGameAsync(site, keyword);
+                    games.Add(site, singleSiteGames);
+                }
+            }
+
+            return games;
+        }
+        
+        /// <summary>
+        ///     Search in All sites
+        /// </summary>
+        /// <param name="keyword">the game you want to find.</param>
+        /// <returns> Multiple sites results as "Dictionary<enSiteUri, clsGames>". </returns>
+        public static async Task<Dictionary<enSiteUri, clsGames>> FindGameAllSitesAsync(string keyword)
+        {
+            Dictionary<enSiteUri, clsGames> games = new Dictionary<enSiteUri, clsGames>();
+
+            foreach (enSiteUri site in getSuporttedSites.Keys)
+            {
+                clsGames singleSiteGames = await FindGameAsync(site, keyword);
+                games.Add(site, singleSiteGames);
+            }
+
+            return games;
+        }
+        #endregion
 
         #region Mapping
 
@@ -211,7 +264,6 @@ namespace CrackDiggerEngineByM51V5
                 { "image", data.ImageLink }
             };
         }
-
         #endregion
     }
 }

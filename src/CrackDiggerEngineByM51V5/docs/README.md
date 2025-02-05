@@ -1,4 +1,4 @@
-# CrackDiggerEngine v1.0.0 Documentation
+# CrackDiggerEngine v1.2.0
 
 ## Overview
 The `CrackDiggerEngine` library is designed to search for game information across several supported sites. It offers methods to retrieve game details and convert data to JSON-like structures.
@@ -14,12 +14,17 @@ The `CrackDiggerEngine` library is designed to search for game information acros
   - [clsGames](#clsgames)
 - [Methods](#methods)
   - [FindGameAsync](#findgameasync)
-  - [ConvertAllGamesDataAsync](#convertallgamesdataasync)
-  - [ConvertSingleGameDataAsync](#convertsinglegamedataasync)
+  - [FindGameFilteredSitesAsync](#findgamefilteredsitesasync)
+  - [FindGameAllSitesAsync](#findgameallsitesasync)
+  - [MapAllGamesDataAsync](#mapallgamesdataasync)
+  - [MapSingleGameDataAsync](#mapsinglegamedataasync)
 
 ---
 
 ## Setup
+
+Download from [nuget manager](https://www.nuget.org/packages/CrackDiggerEngineByM51V5/)
+
 Import the library with:
 ```csharp
 using CrackDiggerEngineByM51V5;
@@ -31,13 +36,15 @@ and use the main class `CrackDiggerEngine` to use it.
 ## Supported Sites
 This library supports searching on the following sites:
 
-| Enum Value | Site Domain |
-|------------|-------------|
-| `steamripDotCom` | steamrip.com |
-| `cracked_gamesDotOrg` | cracked-games.org |
-| `fitgirl_repacksDoteSite` | fitgirl-repacks.site |
-| `apunkagamesDotCom` | apunkagames.com |
-| `mrpcgamerDotNet` | mrpcgamer.net |
+| Enum Value                        | Site Domain           |
+|-----------------------------------|-----------------------|
+| `steamripDotCom`                  | steamrip.com          |
+| `cracked_gamesDotOrg`             | cracked-games.org     |
+| `fitgirl_repacksDoteSite`         | fitgirl-repacks.site  |
+| `apunkagamesDotCom`               | apunkagames.com       |
+| `mrpcgamerDotNet`                 | mrpcgamer.net         |
+| `ovaGamesDotCom`                  | ovagames.com          |
+| `steamUnlockedDotPro`             | steamunlocked.pro     |
 
 You can access all supported sites programmatically using the `getSuporttedSites` property, which returns a dictionary.
 
@@ -108,6 +115,61 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"Unexpected error: {ex.Message}");
+}
+```
+
+---
+
+### `FindGameFilteredSitesAsync`
+Searches for a game on multiple specified sites.
+
+#### Parameters
+- `sitesUri` (`List<enSiteUri>`): The list of sites you want to search in.
+- `keyword` (`string`): The game you want to find.
+
+#### Returns
+A `Task<Dictionary<enSiteUri, clsGames>>` containing the search results for each site.
+
+#### Example Usage
+```csharp
+var result = await CrackDiggerEngine.FindGameFilteredSitesAsync(new List<CrackDiggerEngine.enSiteUri>
+{
+    CrackDiggerEngine.enSiteUri.steamripDotCom,
+    CrackDiggerEngine.enSiteUri.fitgirl_repacksDoteSite
+}, "Game Name");
+
+foreach (var siteResult in result)
+{
+    Console.WriteLine($"Site: {siteResult.Key}, Search link: {siteResult.Value.SearchLink}");
+    foreach (var game in siteResult.Value.Data)
+    {
+        Console.WriteLine($"Title: {game.Title}, Link: {game.GameLink}");
+    }
+}
+```
+
+---
+
+### `FindGameAllSitesAsync`
+Searches for a game on all supported sites.
+
+#### Parameters
+- `keyword` (`string`): The game you want to find.
+
+#### Returns
+A `Task<Dictionary<enSiteUri, clsGames>>` containing the search results for all sites.
+
+#### Example Usage
+```csharp
+var result = await CrackDiggerEngine.FindGameAllSitesAsync("Game Name");
+
+foreach (var siteResult in result)
+{
+    Console.WriteLine($"Site: {siteResult.Key}, Search link: {siteResult.Value.SearchLink}");
+    foreach (var game in siteResult.Value.Data)
+    {
+        Console.WriteLine($"Title: {game.Title}, Link: {game.GameLink}");
+    }
 }
 ```
 
