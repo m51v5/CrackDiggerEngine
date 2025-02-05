@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <PackageId>CrackDiggerEngineByM51V5</PackageId>
+	  <Version>1.0.0</Version>
+	  <Authors>Mustafa (@m51v5)</Authors>
+	  <PackageReadmeFile>docs\README.md</PackageReadmeFile>
+	  <Description>
+		  CrackDiggerEngine is a library designed to search for game information from multiple supported sites. It provides methods to fetch game details and format them into JSON-like structures. 
+		  
+© 2025 Mustafa (@m51v5). All rights reserved.
+
+Disclaimer: This library serves as a search engine for publicly available information only. It does not store or misuse any data in violation of intellectual property or DRM policies.
+	  </Description>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <PackageProjectUrl>https://github.com/m51v5/CrackDiggerEngine/</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/m51v5/CrackDiggerEngine/</RepositoryUrl>
+	  <PackageReleaseNotes>first version with 5 sites supported</PackageReleaseNotes>
+	  <PackageTags>m51v5;game-search; game-scraping; engine; asp.net-core; .net8; json; html-parser; data-extraction</PackageTags>
+	  <PackageIcon>icon.jpg</PackageIcon>
+
+	  <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.72" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Update="docs\README.md" Pack="true" PackagePath="\" />
+		<None Update="icon.jpg" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>
