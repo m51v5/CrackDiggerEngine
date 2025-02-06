@@ -1,4 +1,4 @@
-# CrackDiggerEngine v1.0.0
+# CrackDiggerEngine v1.2.0
 
 ## Overview
 The `CrackDiggerEngine` library is designed to search for game information across several supported sites. It offers methods to retrieve game details and convert data to JSON-like structures.
@@ -15,7 +15,7 @@ The `CrackDiggerEngine` library is designed to search for game information acros
 - [Methods](#methods)
   - [FindGameAsync](#findgameasync)
   - [MapAllGamesDataAsync](#mapallgamesdataasync)
-  - [MapConvertSingleGameDataAsync](#mapsinglegamedataasync)
+  - [MapSingleGameDataAsync](#mapsinglegamedataasync)
 
 ---
 
