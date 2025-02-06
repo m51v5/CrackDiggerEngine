@@ -166,7 +166,7 @@ The `CrackDiggerEngine` library provides a powerful way to search and retrieve g
 ---
 
 ## Copyright
-© 2025-02-01 Mustafa (@m51v5). All rights reserved.
+© 2025-02-05 Mustafa (@m51v5). All rights reserved.
 
 Get In Touch: [https://m51v5.mssg.me/](https://m51v5.mssg.me/)
 
