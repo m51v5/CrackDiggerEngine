@@ -1,0 +1,16 @@
+using HtmlAgilityPack;
+
+namespace CrackDigger.SitesUri.Interfaces
+{
+    internal interface ISiteInfo
+    {
+        public string protocol { get; }
+        public string siteUri { get; }
+        public string searchParameter { get; }
+        public string mainNodeType { get; }
+        public string mainNodeDataName { get; }
+        public string mainNodeDataValue { get; }
+
+        CrackDiggerEngine.clsGameDataObject? GetSingleGameData(HtmlNode item);
+    }
+}
