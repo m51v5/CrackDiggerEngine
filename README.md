@@ -1,176 +1,183 @@
-# Crack Digger Engine v1.2.0
+<div align="center">
 
-## Overview
-The `CrackDiggerEngine` library is designed to search for game information across several supported sites. It offers methods to retrieve game details and convert data to JSON-like structures.
+# CrackDiggerEngine
 
----
+**Search game listings on several public game sites from .NET.**
 
-## Table of Contents
-- [Setup Library](#setup)
-- [Supported Sites](#supported-sites)
-- [Classes and Enums](#classes-and-enums)
-  - [enSiteUri](#ensiteuri)
-  - [clsGameDataObject](#clsgamedataobject)
-  - [clsGames](#clsgames)
-- [Methods](#methods)
-  - [FindGameAsync](#findgameasync)
-  - [MapAllGamesDataAsync](#mapallgamesdataasync)
-  - [MapSingleGameDataAsync](#mapsinglegamedataasync)
+[![NuGet](https://img.shields.io/nuget/v/CrackDiggerEngine)](https://www.nuget.org/packages/CrackDiggerEngine)
+[![Downloads](https://img.shields.io/nuget/dt/CrackDiggerEngine)](https://www.nuget.org/packages/CrackDiggerEngine)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/m51v5/CrackDiggerEngine/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/m51v5/CrackDiggerEngine/actions/workflows/ci.yml)
+
+© 2025–present · [@m51v5](https://github.com/m51v5) · [m51v5.com](https://m51v5.com)
+
+</div>
 
 ---
 
-## Setup
+CrackDiggerEngine is a .NET library that searches game listing sites for a keyword and returns each result's title, link and image. Search one site, a few, or all of them at once.
 
-Download from [nuget manager](https://www.nuget.org/packages/CrackDiggerEngineByM51V5/)
+## Features
 
-Import the library with:
-```csharp
-using CrackDiggerEngineByM51V5;
+- **Several sites, one API:** pick a site from an enum, or search them all.
+- **Clean results:** every result has a title, a link and an image address, never `null`.
+- **Errors as data:** a site that fails returns `isSuccess = false` and an `ErrorMessage`, so one broken site doesn't stop the others.
+- **Ready for JSON:** map results to dictionaries in one call.
+- **Light:** one dependency, HtmlAgilityPack.
+
+---
+
+## Install
+
 ```
-and use the main class `CrackDiggerEngine` to use it.
-
----
-
-## Supported Sites
-This library supports searching on the following sites:
-
-| Enum Value | Site Domain |
-|------------|-------------|
-| `steamripDotCom` | steamrip.com |
-| `cracked_gamesDotOrg` | cracked-games.org |
-| `fitgirl_repacksDoteSite` | fitgirl-repacks.site |
-| `apunkagamesDotCom` | apunkagames.com |
-| `mrpcgamerDotNet` | mrpcgamer.net |
-
-You can access all supported sites programmatically using the `getSuporttedSites` property, which returns a dictionary.
-
----
-
-## Classes and Enums
-
-### `enSiteUri`
-An enumeration representing the supported sites in this library.
-
-Example:
-```csharp
-CrackDiggerEngine.enSiteUri site = CrackDiggerEngine.enSiteUri.steamripDotCom;
+dotnet add package CrackDiggerEngine
 ```
 
-### `clsGameDataObject`
-Represents a single game entry with the following properties:
-- `Title`: The title of the game.
-- `GameLink`: The URL to the game page.
-- `ImageLink`: The URL to the game image.
-
-### `clsGames`
-Represents a collection of games retrieved from a site, along with metadata.
-
-Properties:
-- `isSuccess`: Indicates whether the search was successful.
-- `ErrorMessage`: The error message if the search failed.
-- `SearchLink`: The URL used to perform the search.
-- `SiteUrl`: The base URL of the site.
-- `Data`: A collection of `clsGameDataObject`.
-
-**Note:** The `clsGameDataObject` and `clsGames` classes are designed to be accessed only through the library. Direct instantiation is restricted to maintain data integrity.
+Needs .NET 8 or newer. Package page: [nuget.org/packages/CrackDiggerEngine](https://www.nuget.org/packages/CrackDiggerEngine).
 
 ---
 
-## Methods
+## Quick start
 
-### `FindGameAsync`
-Finds a game on the specified site.
-
-#### Parameters
-- `siteUri` (`enSiteUri`): The site to search.
-- `keyword` (`string`): The game keyword to search for.
-
-#### Returns
-A `Task<clsGames>` object containing the search results.
-
-#### Example Usage
 ```csharp
-try
+using CrackDigger;
+
+var result = await CrackDiggerEngine.FindGameAsync(CrackDiggerEngine.enSiteUri.ovaGamesDotCom, "witcher 3");
+
+if (result.isSuccess)
 {
-    var result = await CrackDiggerEngine.FindGameAsync(CrackDiggerEngine.enSiteUri.steamripDotCom, "Game Name");
-    if (result.isSuccess)
+    foreach (var game in result.Data!)
     {
-        Console.WriteLine($"Site : {result.SiteUrl}");
-        Console.WriteLine($"Search link : {result.SearchLink}");
-        Console.WriteLine("Games Found :\n");
-        foreach (var game in result.Data)
-        {
-            Console.WriteLine($"Title: {game.Title}, Link: {game.GameLink}, Image Link: {game.ImageLink}");
-        }
-    }
-    else
-    {
-        Console.WriteLine($"Error: {result.ErrorMessage}");
+        Console.WriteLine($"{game.Title}: {game.GameLink}");
     }
 }
-catch (Exception ex)
+else
 {
-    Console.WriteLine($"Unexpected error: {ex.Message}");
+    Console.WriteLine($"Error: {result.ErrorMessage}");
+}
+```
+
+Search every site at once:
+
+```csharp
+var all = await CrackDiggerEngine.FindGameAllSitesAsync("witcher 3");
+
+foreach (var (site, games) in all)
+{
+    Console.WriteLine($"{site}: {(games.isSuccess ? games.Data!.Count() + " results" : games.ErrorMessage)}");
 }
 ```
 
 ---
 
-### `MapAllGamesDataAsync`
-Converts a collection of `clsGameDataObject` to a list of dictionaries.
+## Supported sites
 
-#### Parameters
-- `data` (`IEnumerable<clsGameDataObject>`): The game data to convert.
+| Enum value | Site | Status (2026-11-07) |
+|---|---|---|
+| `fitgirl_repacksDoteSite` | fitgirl-repacks.site | ✅ Works, no images |
+| `apunkagamesDotCom` | apunkagames.com | ✅ Works |
+| `mrpcgamerDotNet` | mrpcgamer.net | ✅ Works |
+| `ovaGamesDotCom` | ovagames.com | ✅ Works |
+| `steamUnlockedDotPro` | steamunlocked.pro | ⚠️ Returns results unrelated to the search |
+| `cracked_gamesDotOrg` | cracked-games.org | ❌ The site's layout changed; nothing is found |
+| `steamripDotCom` | steamrip.com | ❌ Blocked by the site's bot protection |
 
-#### Returns
-A `Task<IEnumerable<Dictionary<string, string>>>` representing the converted data.
+`CrackDiggerEngine.getSuporttedSites` returns the same list as a dictionary of enum value to domain.
 
-#### Example Usage
+---
+
+## API
+
+All members are on the static class `CrackDiggerEngine`, in the `CrackDigger` namespace.
+
+### Search
+
+| Method | Returns |
+|---|---|
+| `FindGameAsync(enSiteUri site, string keyword)` | `Task<clsGames>`: one site's results |
+| `FindGameFilteredSitesAsync(List<enSiteUri> sites, string keyword)` | `Task<Dictionary<enSiteUri, clsGames>>`: the listed sites, each searched once |
+| `FindGameAllSitesAsync(string keyword)` | `Task<Dictionary<enSiteUri, clsGames>>`: every supported site |
+
+Sites are searched one after another. Each search sends one request to that site.
+
+### Results
+
+**`clsGames`**, one site's search:
+
+| Property | Meaning |
+|---|---|
+| `isSuccess` | `true` if the page loaded and results were found |
+| `ErrorMessage` | Why it failed, when `isSuccess` is `false` |
+| `SearchLink` | The search address that was requested |
+| `SiteUrl` | The site's domain |
+| `Data` | The results, as `IEnumerable<clsGameDataObject>`; `null` when it failed |
+
+**`clsGameDataObject`**, one result: `Title`, `GameLink`, `ImageLink`. Each is an empty string when the site didn't provide it.
+
+Both classes are created by the library only.
+
+### Mapping
+
+| Method | Returns |
+|---|---|
+| `MapAllGamesDataAsync(IEnumerable<clsGameDataObject> data)` | `Task<IEnumerable<Dictionary<string, string>>>` |
+| `MapSingleGameDataAsync(clsGameDataObject data)` | `Task<Dictionary<string, string>>` |
+
+Each dictionary has the keys `title`, `link` and `image`:
+
 ```csharp
-var convertedData = await CrackDiggerEngine.ConvertAllGamesDataAsync(result.Data);
-foreach (var item in convertedData)
-{
-    Console.WriteLine($"Title: {item["title"]}, Link: {item["link"]}, Image: {item["image"]}");
-}
+var rows = await CrackDiggerEngine.MapAllGamesDataAsync(result.Data!);
+string json = System.Text.Json.JsonSerializer.Serialize(rows);
 ```
 
 ---
 
-### `MapSingleGameDataAsync`
-Converts a single `clsGameDataObject` to a dictionary.
+## Privacy
 
-#### Parameters
-- `data` (`clsGameDataObject`): The game data to convert.
+Each search sends one request to that site's search page, with your keyword in the address and a User-Agent naming the library. Nothing goes anywhere else, and nothing is saved. Results come from third-party pages, so treat them as untrusted input. Details are in [SECURITY.md](SECURITY.md).
 
-#### Returns
-A `Task<Dictionary<string, string>>` representing the converted data.
+---
 
-#### Example Usage
-```csharp
-var singleGameData = await CrackDiggerEngine.ConvertSingleGameDataAsync(game);
-Console.WriteLine($"Title: {singleGameData["title"]}, Link: {singleGameData["link"]}, Image: {singleGameData["image"]}");
+## Documentation
+
+- [Development guide](docs/DEVELOPMENT.md): building, checks, adding or fixing a site, and publishing a release.
+
+---
+
+## Build from source
+
+You need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+
+```
+git clone https://github.com/m51v5/CrackDiggerEngine.git
+cd CrackDiggerEngine
+dotnet build CrackDiggerEngine.sln
 ```
 
 ---
 
 ## Notes
-- Ensure you handle exceptions when calling `FindGameAsync`, as network issues may cause errors.
-- The library uses `HtmlAgilityPack` for HTML parsing.
-- Always validate and sanitize inputs when using this library.
+
+- **Moving from `CrackDiggerEngineByM51V5`:** that package ID is deprecated. Run `dotnet remove package CrackDiggerEngineByM51V5`, then `dotnet add package CrackDiggerEngine`, and change `using CrackDiggerEngineByM51V5;` to `using CrackDigger;`. Class and method names are the same.
+- Sites change their pages without notice, so a site can stop working between releases. Check `isSuccess` and `ErrorMessage` on every result.
 
 ---
 
-## Conclusion
-The `CrackDiggerEngine` library provides a powerful way to search and retrieve game information from multiple sources. With its easy-to-use methods and structured data classes, developers can quickly integrate game search functionalities into their applications.
+## Disclaimer
+
+This library works like a search engine: it shows only information that the sites make public. It doesn't claim ownership of that information, which belongs to its owners. It stores nothing and isn't meant to be used against intellectual property or DRM rules.
 
 ---
 
-## Copyright
-© 2025-02-05 Mustafa (@m51v5). All rights reserved.
+## Contributing and support
 
-Get In Touch: [https://m51v5.mssg.me/](https://m51v5.mssg.me/)
+- Found a bug, a broken site, or have an idea? [Open an issue](https://github.com/m51v5/CrackDiggerEngine/issues/new/choose).
+- Want to help? Read the [contributing guide](CONTRIBUTING.md) and the [code of conduct](https://github.com/m51v5/.github/blob/main/CODE_OF_CONDUCT.md).
+- Found a security problem? See [SECURITY.md](SECURITY.md).
+- Other ways to reach me: [m51v5.com/contact](https://m51v5.com/contact).
 
 ---
 
-### Disclaimer
-This library acts as a search engine and displays only publicly available information. We do not claim ownership of the data displayed. All rights belong to their respective owners from which the data was sourced. No data is stored or misused in violation of intellectual property or DRM policies.
+## License
+
+[MIT](LICENSE) © [@m51v5](https://m51v5.com)

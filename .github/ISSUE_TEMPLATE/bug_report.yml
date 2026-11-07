@@ -1,0 +1,45 @@
+name: Bug report
+description: Something doesn't work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you called, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 2.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: site
+    attributes:
+      label: Which site?
+      options:
+        - steamripDotCom
+        - cracked_gamesDotOrg
+        - fitgirl_repacksDoteSite
+        - apunkagamesDotCom
+        - mrpcgamerDotNet
+        - ovaGamesDotCom
+        - steamUnlockedDotPro
+        - All sites
+        - Not about a site
+    validations:
+      required: true
+  - type: input
+    id: keyword
+    attributes:
+      label: Search keyword
+      placeholder: witcher 3
+  - type: textarea
+    id: error
+    attributes:
+      label: ErrorMessage, or what the result looked like
+      description: The `ErrorMessage` from the result, or the titles and links you got.
+      render: text

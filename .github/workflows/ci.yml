@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '*.sln'
+      - 'global.json'
+      - '.editorconfig'
+      - '.github/workflows/ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Format
+        run: dotnet format CrackDiggerEngine.sln --verify-no-changes
+      - name: Build
+        run: dotnet build CrackDiggerEngine.sln -c Release -warnaserror
+      - name: Pack
+        run: dotnet pack src/CrackDiggerEngine/CrackDiggerEngine.csproj -c Release -o artifacts

@@ -1,0 +1,18 @@
+name: Feature request
+description: An idea for CrackDiggerEngine, like a new site
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: What you're building, and where the library falls short today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+      description: How you imagine it working. For a new site, its address and how its search page works.
+    validations:
+      required: true
