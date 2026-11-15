@@ -87,18 +87,51 @@ namespace CrackDigger
         }
         #endregion
 
-        #region Find Game Methods
+        #region HTTP Client
         // One client for all searches, so searching many sites doesn't open a connection pool each time.
-        private static readonly HttpClient Http = CreateClient();
+        private static volatile HttpClient Http = CreateClient();
 
-        // Names the library in each request; some sites refuse requests with no User-Agent.
+        /// <summary>
+        ///     The User-Agent the library sends, naming itself and its version.
+        /// </summary>
+        public static string UserAgent { get; } = BuildUserAgent();
+
+        /// <summary>
+        ///     The client every search uses. Change its headers or timeout here,
+        ///     or replace it with <see cref="UseHttpClient"/>.
+        /// </summary>
+        public static HttpClient HttpClient => Http;
+
+        /// <summary>
+        ///     Makes every later search use your client, for example one with a proxy, a custom handler or a test handler.
+        ///     The library never disposes it. If it has no User-Agent, the library's is added; some sites refuse requests without one.
+        /// </summary>
+        /// <param name="client"> The client to use from now on. </param>
+        public static void UseHttpClient(HttpClient client)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            if (client.DefaultRequestHeaders.UserAgent.Count == 0)
+            {
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+            }
+            Http = client;
+        }
+
+        private static string BuildUserAgent()
+        {
+            Version version = typeof(CrackDiggerEngine).Assembly.GetName().Version ?? new Version(0, 0, 0);
+            return $"CrackDiggerEngine/{version.Major}.{version.Minor}.{version.Build} (+https://github.com/m51v5/CrackDiggerEngine)";
+        }
+
         private static HttpClient CreateClient()
         {
             HttpClient client = new HttpClient();
-            Version version = typeof(CrackDiggerEngine).Assembly.GetName().Version ?? new Version(0, 0, 0);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd($"CrackDiggerEngine/{version.Major}.{version.Minor}.{version.Build} (+https://github.com/m51v5/CrackDiggerEngine)");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(BuildUserAgent());
             return client;
         }
+        #endregion
+
+        #region Find Game Methods
 
         /// <summary>
         ///     Find a game in any supported site.

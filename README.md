@@ -102,6 +102,21 @@ All members are on the static class `CrackDiggerEngine`, in the `CrackDigger` na
 
 Sites are searched one after another. Each search sends one request to that site, or two when its WordPress API fails and the search page is tried next.
 
+### HTTP client
+
+All searches share one `HttpClient`.
+
+| Member | What it's for |
+|---|---|
+| `HttpClient` | The client in use. Change its headers or `Timeout` directly |
+| `UseHttpClient(HttpClient client)` | Use your own client from now on, for a proxy, a custom handler or tests. The library never disposes it, and adds its User-Agent only if yours has none |
+| `UserAgent` | The User-Agent the library sends |
+
+```csharp
+var handler = new HttpClientHandler { Proxy = new System.Net.WebProxy("http://127.0.0.1:8080") };
+CrackDiggerEngine.UseHttpClient(new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) });
+```
+
 ### Results
 
 **`clsGames`**, one site's search:
