@@ -123,61 +123,72 @@ namespace CrackDigger
             }
 
             ISiteInfo site = siteFunc!();
-            string keyLink = site.protocol + site.siteUri + site.searchParameter + Uri.EscapeDataString(keyword);
 
-            // Start
-            List<clsGameDataObject> data = new List<clsGameDataObject>();
+            // The site's own search page: what a person would open to see the same results.
             Games.SiteUrl = site.siteUri;
-            Games.SearchLink = keyLink;
+            Games.SearchLink = site.protocol + site.siteUri + site.searchParameter + Uri.EscapeDataString(keyword);
 
+            // WordPress API first: it doesn't change with the site's theme.
+            string? apiError = null;
+            if (site.wordPress is WordPressApi api)
+            {
+                try
+                {
+                    Games.Data = await WordPressSearch.SearchAsync(Http, api, keyword);
+                    Games.isSuccess = true;
+                    return Games;
+                }
+                catch (Exception ex)
+                {
+                    apiError = ex.Message;
+                }
+            }
+
+            // Then the search page.
             try
             {
-                // Intialize
-                string htmlCode = await Http.GetStringAsync(keyLink);
-
-                // Load
-                HtmlDocument document = new HtmlDocument();
-                document.LoadHtml(htmlCode);
-
-                HtmlNodeCollection? result;
-
-                // Get main nodes
-                if (string.IsNullOrEmpty(site.mainNodeDataName))
-                {
-                    result = document.DocumentNode.SelectNodes($"//{site.mainNodeType}");
-                }
-                else
-                {
-                    result = document.DocumentNode.SelectNodes($"//{site.mainNodeType}[contains(@{site.mainNodeDataName}, '{site.mainNodeDataValue}')]");
-                }
-
-                if (result != null)
-                {
-                    foreach (var item in result)
-                    {
-                        clsGameDataObject? gameData = site.GetSingleGameData(item);
-
-                        if (gameData != null)
-                        {
-                            data.Add(gameData);
-                        }
-                    }
-
-                    Games.isSuccess = true;
-                    Games.Data = data;
-                }
-                else
-                {
-                    Games.isSuccess = false;
-                    Games.ErrorMessage = "Catched error : empty result";
-                }
+                Games.Data = await SearchPageAsync(site, Games.SearchLink);
+                Games.isSuccess = true;
             }
             catch (Exception ex)
             {
                 Games.isSuccess = false;
-                Games.ErrorMessage = "Catched error : " + ex.Message;
+                Games.ErrorMessage = apiError == null
+                    ? "Catched error : " + ex.Message
+                    : $"Catched error : API: {apiError} Search page: {ex.Message}";
             }
             return Games;
+        }
+
+        // Reads results from the site's search page; throws when there are none or search doesn't work.
+        private static async Task<List<clsGameDataObject>> SearchPageAsync(ISiteInfo site, string searchLink)
+        {
+            string htmlCode = await Http.GetStringAsync(searchLink);
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(htmlCode);
+
+            if (SiteText.IsHomePage(document))
+            {
+                throw new InvalidOperationException("site search not available: the site answered with its home page");
+            }
+
+            string xpath = string.IsNullOrEmpty(site.mainNodeDataName)
+                ? $"//{site.mainNodeType}"
+                : $"//{site.mainNodeType}[contains(@{site.mainNodeDataName}, '{site.mainNodeDataValue}')]";
+            HtmlNodeCollection result = document.DocumentNode.SelectNodes(xpath)
+                ?? throw new InvalidOperationException("empty result");
+
+            string baseUrl = site.protocol + site.siteUri;
+            List<clsGameDataObject> data = new List<clsGameDataObject>();
+            foreach (HtmlNode item in result)
+            {
+                clsGameDataObject? gameData = site.GetSingleGameData(item);
+                if (gameData != null)
+                {
+                    data.Add(SiteText.Normalize(gameData, baseUrl));
+                }
+            }
+            return data;
         }
 
         /// <summary>

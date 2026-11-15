@@ -1,5 +1,4 @@
 using CrackDigger.SitesUri.Interfaces;
-using CrackDigger;
 using HtmlAgilityPack;
 
 namespace CrackDigger.SitesUri
@@ -9,31 +8,26 @@ namespace CrackDigger.SitesUri
         public string protocol => "https://";
         public string siteUri => siteUrl;
         public static string siteUrl => "cracked-games.org";
-        public string searchParameter => "/?s=";
-        public string mainNodeType => "div";
+
+        // Search address from the site's schema.org SearchAction; /?s= now shows the home page.
+        public string searchParameter => "/search?q=";
+
+        // Each result is a cover link: <a class="block relative aspect-[3/4] ..."><img alt="Title"></a>
+        public string mainNodeType => "a";
         public string mainNodeDataName => "class";
-        public string mainNodeDataValue => "news-one";
+        public string mainNodeDataValue => "block relative aspect-[3/4]";
 
         public CrackDiggerEngine.clsGameDataObject? GetSingleGameData(HtmlNode item)
         {
-            // Get game image link from div data
-            var img = item.SelectSingleNode(".//img");
-            string? imageLink = img?.GetAttributeValue("src", string.Empty);
-
-            // Get game Link
-            var a_tag = item.SelectSingleNode(".//a");
-            string? gameLink = a_tag?.GetAttributeValue("href", string.Empty);
-            if (string.IsNullOrEmpty(gameLink) && !gameLink!.Contains(siteUri))
+            HtmlNode? img = item.SelectSingleNode(".//img");
+            if (img == null)
             {
-                gameLink = $"{protocol}{siteUri}/{gameLink}";
+                return null;
             }
+            string? gameLink = item.GetAttributeValue("href", string.Empty);
+            string? title = img.GetAttributeValue("alt", string.Empty);
 
-            // Get game title
-            var h2_tag = item?.SelectSingleNode(".//h2")?.SelectSingleNode(".//a");
-            string? title = h2_tag?.InnerText.Trim();
-
-            // Save data
-            return new CrackDiggerEngine.clsGameDataObject(title, gameLink, imageLink);
+            return new CrackDiggerEngine.clsGameDataObject(title, gameLink, SiteText.ImageSource(img));
         }
     }
 }

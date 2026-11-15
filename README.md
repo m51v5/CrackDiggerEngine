@@ -72,17 +72,19 @@ foreach (var (site, games) in all)
 
 ## Supported sites
 
-| Enum value | Site | Status (2026-11-07) |
+| Enum value | Site | Status (2026-11-15) |
 |---|---|---|
-| `fitgirl_repacksDoteSite` | fitgirl-repacks.site | ✅ Works, no images |
-| `apunkagamesDotCom` | apunkagames.com | ✅ Works |
+| `fitgirl_repacksDoteSite` | fitgirl-repacks.site | ✅ Works |
+| `apunkagamesDotCom` | aapunkagames.com | ✅ Works. The site moved from apunkagames.com; the enum name stays |
 | `mrpcgamerDotNet` | mrpcgamer.net | ✅ Works |
 | `ovaGamesDotCom` | ovagames.com | ✅ Works |
-| `steamUnlockedDotPro` | steamunlocked.pro | ⚠️ Returns results unrelated to the search |
-| `cracked_gamesDotOrg` | cracked-games.org | ❌ The site's layout changed; nothing is found |
+| `cracked_gamesDotOrg` | cracked-games.org | ✅ Works |
+| `steamUnlockedDotPro` | steamunlocked.pro | ❌ The site's own search doesn't work: it answers with its home page, so the result is `isSuccess = false` with "site search not available" |
 | `steamripDotCom` | steamrip.com | ❌ Blocked by the site's bot protection |
 
 `CrackDiggerEngine.getSuporttedSites` returns the same list as a dictionary of enum value to domain.
+
+**How sites are searched:** for sites that run WordPress, the library asks the site's [WordPress REST API](https://developer.wordpress.org/rest-api/) for posts whose title matches, so a change to the site's theme doesn't break it. If the API is off, it reads the site's search page instead. Other sites are always read from their search page. Titles come with HTML entities decoded, and links and images as absolute addresses.
 
 ---
 
@@ -98,7 +100,7 @@ All members are on the static class `CrackDiggerEngine`, in the `CrackDigger` na
 | `FindGameFilteredSitesAsync(List<enSiteUri> sites, string keyword)` | `Task<Dictionary<enSiteUri, clsGames>>`: the listed sites, each searched once |
 | `FindGameAllSitesAsync(string keyword)` | `Task<Dictionary<enSiteUri, clsGames>>`: every supported site |
 
-Sites are searched one after another. Each search sends one request to that site.
+Sites are searched one after another. Each search sends one request to that site, or two when its WordPress API fails and the search page is tried next.
 
 ### Results
 
@@ -106,9 +108,9 @@ Sites are searched one after another. Each search sends one request to that site
 
 | Property | Meaning |
 |---|---|
-| `isSuccess` | `true` if the page loaded and results were found |
+| `isSuccess` | `true` if the search worked. Through the WordPress API, `Data` can be empty when nothing matched |
 | `ErrorMessage` | Why it failed, when `isSuccess` is `false` |
-| `SearchLink` | The search address that was requested |
+| `SearchLink` | The site's own search page for the keyword, to open in a browser |
 | `SiteUrl` | The site's domain |
 | `Data` | The results, as `IEnumerable<clsGameDataObject>`; `null` when it failed |
 
@@ -134,7 +136,7 @@ string json = System.Text.Json.JsonSerializer.Serialize(rows);
 
 ## Privacy
 
-Each search sends one request to that site's search page, with your keyword in the address and a User-Agent naming the library. Nothing goes anywhere else, and nothing is saved. Results come from third-party pages, so treat them as untrusted input. Details are in [SECURITY.md](SECURITY.md).
+Each search sends one or two requests to that site, its WordPress API and then its search page if needed, with your keyword in the address and a User-Agent naming the library. Nothing goes anywhere else, and nothing is saved. Results come from third-party pages, so treat them as untrusted input. Details are in [SECURITY.md](SECURITY.md).
 
 ---
 

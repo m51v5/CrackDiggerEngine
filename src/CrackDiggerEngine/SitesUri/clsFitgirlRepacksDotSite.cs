@@ -1,5 +1,4 @@
 using CrackDigger.SitesUri.Interfaces;
-using CrackDigger;
 using HtmlAgilityPack;
 
 namespace CrackDigger.SitesUri
@@ -14,24 +13,17 @@ namespace CrackDigger.SitesUri
         public string mainNodeDataName => "class";
         public string mainNodeDataValue => "entry-title";
 
+        // Posts have no featured image; the cover is the first image in the post.
+        public WordPressApi? wordPress => new(siteUrl, ImageFromContent: true);
+
         public CrackDiggerEngine.clsGameDataObject? GetSingleGameData(HtmlNode item)
         {
-            // Get game image link from div data
-            string imageLink = string.Empty;
-
-            // Get game Link
-            var a_tag = item.SelectSingleNode(".//a");
+            // The search page lists titles only, without images.
+            HtmlNode? a_tag = item.SelectSingleNode(".//a");
             string? gameLink = a_tag?.GetAttributeValue("href", string.Empty);
-            if (string.IsNullOrEmpty(gameLink) && !gameLink!.Contains(siteUri))
-            {
-                gameLink = $"{protocol}{siteUri}/{gameLink}";
-            }
+            string? title = a_tag?.InnerText;
 
-            // Get game title
-            string? title = a_tag?.InnerText.Trim();
-
-            // Save data
-            return new CrackDiggerEngine.clsGameDataObject(title, gameLink, imageLink);
+            return new CrackDiggerEngine.clsGameDataObject(title, gameLink, string.Empty);
         }
     }
 }

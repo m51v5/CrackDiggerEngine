@@ -8,7 +8,7 @@ Fixes go into the latest release only.
 
 ## What the library sends
 
-- **One request per site you search.** `FindGameAsync` sends one HTTPS `GET` to that site's search page, with your keyword in the address. `FindGameAllSitesAsync` does that for every supported site.
+- **One or two requests per site you search.** `FindGameAsync` sends an HTTPS `GET` to that site's WordPress API (`/wp-json/wp/v2/posts`) when it has one, and to its search page when it has none or the API fails, with your keyword in the address. `FindGameAllSitesAsync` does that for every supported site.
 - **What the site sees:** your IP address, the keyword, and a User-Agent naming the library and its version, `CrackDiggerEngine/2.0.0 (+https://github.com/m51v5/CrackDiggerEngine)`.
 - **Nothing else:** no other servers, no tracking, and nothing is saved to disk.
 

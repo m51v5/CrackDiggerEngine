@@ -116,8 +116,10 @@ git push origin --delete v2.1.0
 ```
 src/CrackDiggerEngine/
   CrackDiggerEngine.cs           public API: sites enum, result classes, search and map methods
-  SitesUri/Interfaces/ISiteInfo.cs   what each site provides: address, search path, result node, parser
+  SitesUri/Interfaces/ISiteInfo.cs   what each site provides: address, search path, result node, parser, WordPress API
   SitesUri/cls*.cs               one class per site
+  SitesUri/WordPressSearch.cs    search through a site's WordPress REST API
+  SitesUri/SiteText.cs           entity decoding, absolute links, lazy images, home-page check
   icon.png                       package icon
 
 samples/CrackDigger.Sample/      WPF sample, not packed or released
@@ -134,10 +136,11 @@ The sample builds in CI on Linux too, through `EnableWindowsTargeting`; it only 
 
 ## Adding or fixing a site
 
-1. Save one search results page from the site and find the element that wraps each result.
-2. In the site's class, set `searchParameter` and the `mainNode...` values to match that element.
-3. In `GetSingleGameData`, read the title, link and image from it. Return `null` to skip an element that isn't a result.
-4. For a new site: add an `enSiteUri` value and a row in both dictionaries in `CrackDiggerEngine.cs`, and a row in the README's site table.
-5. Search it once from the sample app.
+1. **WordPress first.** If the site's search address is `/?s=`, open `https://<site>/wp-json/wp/v2/posts?search=test` once. If it answers with JSON, set `wordPress => new("<host>")` in the site's class. Add `ImageFromContent: true` when its posts have no featured image, so the cover comes from the first image in the post. The search page below then only runs when the API fails.
+2. **Search page.** Save one search results page and find the element that wraps each result. If the site has no `/?s=`, its home page often names its search address in a schema.org `SearchAction`.
+3. In the site's class, set `searchParameter` and the `mainNode...` values to match that element.
+4. In `GetSingleGameData`, read the title, link and image from it. Return `null` to skip an element that isn't a result. The engine decodes entities and makes links absolute afterwards, so return them as the page has them.
+5. For a new site: add an `enSiteUri` value and a row in both dictionaries in `CrackDiggerEngine.cs`, and a row in the README's site table.
+6. Search it once from the sample app.
 
 A site that blocks plain requests, for example with a Cloudflare challenge, isn't supported. Don't work around it.

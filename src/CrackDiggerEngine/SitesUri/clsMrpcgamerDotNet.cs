@@ -1,5 +1,4 @@
 using CrackDigger.SitesUri.Interfaces;
-using CrackDigger;
 using HtmlAgilityPack;
 
 namespace CrackDigger.SitesUri
@@ -14,31 +13,17 @@ namespace CrackDigger.SitesUri
         public string mainNodeDataName => "class";
         public string mainNodeDataValue => "postimge";
 
+        // Posts have no featured image; the cover is the first image in the post.
+        public WordPressApi? wordPress => new(siteUrl, ImageFromContent: true);
+
         public CrackDiggerEngine.clsGameDataObject? GetSingleGameData(HtmlNode item)
         {
-            // Get game Link
-            var a_tag = item.SelectSingleNode(".//a");
+            HtmlNode? a_tag = item.SelectSingleNode(".//a");
             string? gameLink = a_tag?.GetAttributeValue("href", string.Empty);
-            if (string.IsNullOrEmpty(gameLink) && !gameLink!.Contains(siteUri))
-            {
-                gameLink = $"{protocol}{siteUri}/{gameLink}";
-            }
-
-            // Get game image link from div data
-            var img = a_tag?.SelectSingleNode(".//img");
-            string? imageLink = img?.GetAttributeValue("src", string.Empty);
-
-            if (!string.IsNullOrEmpty(imageLink) && !imageLink.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                imageLink = img?.GetAttributeValue("data-src", string.Empty);
-            }
-
-            // Get game title
+            string imageLink = SiteText.ImageSource(a_tag?.SelectSingleNode(".//img"));
             string? title = a_tag?.GetAttributeValue("title", string.Empty);
 
-            // Save data
             return new CrackDiggerEngine.clsGameDataObject(title, gameLink, imageLink);
         }
     }
-
 }

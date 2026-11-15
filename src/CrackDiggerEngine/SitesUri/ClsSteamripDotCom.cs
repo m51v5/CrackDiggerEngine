@@ -1,5 +1,4 @@
 using CrackDigger.SitesUri.Interfaces;
-using CrackDigger;
 using HtmlAgilityPack;
 
 namespace CrackDigger.SitesUri
@@ -14,30 +13,22 @@ namespace CrackDigger.SitesUri
         public string mainNodeDataName => "class";
         public string mainNodeDataValue => "post-element";
 
+        // The search page is behind Cloudflare's bot check; the API isn't.
+        public WordPressApi? wordPress => new(siteUrl);
+
         public CrackDiggerEngine.clsGameDataObject? GetSingleGameData(HtmlNode item)
         {
-            // Get game image link from div data
-            var div = item.SelectSingleNode(".//div");
+            HtmlNode? div = item.SelectSingleNode(".//div");
             string? imageLink = div?.GetAttributeValue("data-back-webp", string.Empty);
             if (string.IsNullOrEmpty(imageLink))
             {
                 imageLink = div?.GetAttributeValue("data-back", string.Empty);
             }
 
-            // Get game Link
-            var a_tag = item.SelectSingleNode(".//a");
+            HtmlNode? a_tag = item.SelectSingleNode(".//a");
             string? gameLink = a_tag?.GetAttributeValue("href", string.Empty);
+            string? title = a_tag?.SelectSingleNode(".//span")?.InnerText;
 
-            if (gameLink != null && !gameLink.Contains(siteUri))
-            {
-                gameLink = $"{protocol}{siteUri}/{gameLink}";
-            }
-
-            // Get game title
-            var span_tag = a_tag?.SelectSingleNode(".//span");
-            string? title = span_tag?.InnerText.Trim();
-
-            // Save data
             return new CrackDiggerEngine.clsGameDataObject(title, gameLink, imageLink);
         }
     }
