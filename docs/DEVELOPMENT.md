@@ -12,7 +12,13 @@ You need the .NET 8 SDK. `global.json` picks the newest 8.0 SDK you have. From t
 dotnet build CrackDiggerEngine.sln
 ```
 
-To try it, make a small console app outside the repo that references `src/CrackDiggerEngine/CrackDiggerEngine.csproj`, and call `CrackDiggerEngine.FindGameAsync` from it. Each call sends one real request to that site, so keep test runs short.
+To try it, run the sample app, which uses the library from `src/` directly (Windows only):
+
+```
+dotnet run --project samples/CrackDigger.Sample
+```
+
+Each search sends one real request to each selected site, so keep test runs short.
 
 ## Checks
 
@@ -28,7 +34,7 @@ dotnet pack src/CrackDiggerEngine/CrackDiggerEngine.csproj -c Release -o artifac
 
 ## Publish a release
 
-Pushing to `main` runs CI when the commit changes what gets built: `src/`, the `.sln`, `global.json`, `.editorconfig` or `ci.yml` itself. Pushing a `v*` tag runs the Release workflow, which:
+Pushing to `main` runs CI when the commit changes what gets built: `src/`, `samples/`, the `.sln`, `global.json`, `.editorconfig` or `ci.yml` itself. Pushing a `v*` tag runs the Release workflow, which:
 
 1. checks the tagged commit is on `main`
 2. checks the tag matches `<Version>` in `src/CrackDiggerEngine/CrackDiggerEngine.csproj`
@@ -112,8 +118,19 @@ src/CrackDiggerEngine/
   CrackDiggerEngine.cs           public API: sites enum, result classes, search and map methods
   SitesUri/Interfaces/ISiteInfo.cs   what each site provides: address, search path, result node, parser
   SitesUri/cls*.cs               one class per site
-  icon.jpg                       package icon
+  icon.png                       package icon
+
+samples/CrackDigger.Sample/      WPF sample, not packed or released
+  Views/                         main and About windows
+  ViewModels/                    MVVM with CommunityToolkit.Mvvm
+  Services/SearchService.cs      the only class that calls the library
+  Services/ImageLoader.cs        cover images, with the sample's User-Agent
+  Services/UpdateChecker.cs      compares the library version with the latest release
+  Themes/Dark.xaml               every color and style
+  AppLinks.cs                    every address the sample opens or reads
 ```
+
+The sample builds in CI on Linux too, through `EnableWindowsTargeting`; it only runs on Windows.
 
 ## Adding or fixing a site
 
@@ -121,6 +138,6 @@ src/CrackDiggerEngine/
 2. In the site's class, set `searchParameter` and the `mainNode...` values to match that element.
 3. In `GetSingleGameData`, read the title, link and image from it. Return `null` to skip an element that isn't a result.
 4. For a new site: add an `enSiteUri` value and a row in both dictionaries in `CrackDiggerEngine.cs`, and a row in the README's site table.
-5. Search it once from your console app.
+5. Search it once from the sample app.
 
 A site that blocks plain requests, for example with a Cloudflare challenge, isn't supported. Don't work around it.

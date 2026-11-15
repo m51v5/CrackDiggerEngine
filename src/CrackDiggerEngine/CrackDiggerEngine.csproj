@@ -18,7 +18,7 @@
     <RepositoryUrl>https://github.com/m51v5/CrackDiggerEngine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.jpg</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>game-search;scraping;html-parser;data-extraction</PackageTags>
     <PackageReleaseNotes>https://github.com/m51v5/CrackDiggerEngine/releases</PackageReleaseNotes>
   </PropertyGroup>
@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="icon.jpg" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

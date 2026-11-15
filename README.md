@@ -138,9 +138,23 @@ Each search sends one request to that site's search page, with your keyword in t
 
 ---
 
+## Sample app
+
+A Windows app in [`samples/CrackDigger.Sample`](samples/CrackDigger.Sample) that shows the library at work: it searches the sites you pick at the same time, and shows each site's status and the results as cards. Build it from source; it isn't released.
+
+```
+dotnet run --project samples/CrackDigger.Sample
+```
+
+![The sample app showing results for "witcher 3"](https://raw.githubusercontent.com/m51v5/CrackDiggerEngine/main/docs/images/sample.png)
+
+**Privacy and updates:** besides the searches, the sample downloads each result's cover image, and on launch it asks GitHub for the latest release to tell you when a newer library is out. It never downloads or installs anything. Details are in [SECURITY.md](SECURITY.md).
+
+---
+
 ## Documentation
 
-- [Development guide](docs/DEVELOPMENT.md): building, checks, adding or fixing a site, and publishing a release.
+- [Development guide](docs/DEVELOPMENT.md): building, checks, the sample app, adding or fixing a site, and publishing a release.
 
 ---
 

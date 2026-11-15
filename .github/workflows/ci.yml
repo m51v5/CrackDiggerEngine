@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      - 'samples/**'
       - '*.sln'
       - 'global.json'
       - '.editorconfig'

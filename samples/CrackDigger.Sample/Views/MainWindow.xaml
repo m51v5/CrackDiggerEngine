@@ -1,0 +1,312 @@
+<Window x:Class="CrackDigger.Sample.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:CrackDigger.Sample.ViewModels"
+        xmlns:local="clr-namespace:CrackDigger.Sample"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="CrackDigger Sample" Icon="/Assets/app.ico"
+        Width="1100" Height="720" MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+    <!-- No title bar, but it still resizes, snaps and maximizes -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Style>
+        <Style TargetType="Window" BasedOn="{StaticResource DarkWindow}">
+            <Setter Property="Background" Value="{StaticResource BrandGradient}"/>
+            <Style.Triggers>
+                <!-- A maximized borderless window reaches past the screen edges by this much -->
+                <Trigger Property="WindowState" Value="Maximized">
+                    <Setter Property="BorderThickness" Value="7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
+
+    <Window.Resources>
+        <!-- Search and Stop share one spot -->
+        <Style x:Key="SearchButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="StopButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Status dot per site state -->
+        <Style x:Key="StatusDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Fill" Value="{StaticResource TextMuted}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 0 10 0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static vm:SiteState.Searching}">
+                    <Setter Property="Fill" Value="Transparent"/>
+                    <Setter Property="Stroke" Value="{StaticResource Warning}"/>
+                    <Setter Property="StrokeThickness" Value="1.5"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static vm:SiteState.Done}">
+                    <Setter Property="Fill" Value="{StaticResource Success}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static vm:SiteState.Failed}">
+                    <Setter Property="Fill" Value="{StaticResource Danger}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CountText" TargetType="TextBlock" BasedOn="{StaticResource Muted}">
+            <Setter Property="DockPanel.Dock" Value="Right"/>
+            <Setter Property="Margin" Value="8 0 0 0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static vm:SiteState.Failed}">
+                    <Setter Property="Foreground" Value="{StaticResource Danger}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AllRowVisibility" TargetType="ToggleButton" BasedOn="{StaticResource AllRow}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SiteStatuses.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CenterMessage" TargetType="TextBlock" BasedOn="{StaticResource Muted}">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="MaxWidth" Value="460"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Message}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Orange dot on About when a newer library is out, as in Hybrid -->
+        <Style x:Key="UpdateDot" TargetType="Ellipse">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Update.IsAvailable}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Maximize turns into restore -->
+        <Style x:Key="MaximizeGlyph" TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+            <Setter Property="Text" Value="&#xE922;"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                    <Setter Property="Text" Value="&#xE923;"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="CardTemplate" DataType="{x:Type vm:GameCardViewModel}">
+            <Button Style="{StaticResource CardButton}" Width="200" Margin="0 0 14 14"
+                    Command="{Binding OpenCommand}" ToolTip="{Binding ToolTip}"
+                    AutomationProperties.Name="{Binding Title}">
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Open" Command="{Binding OpenCommand}"/>
+                        <MenuItem Header="Copy link" Command="{Binding CopyLinkCommand}"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <StackPanel>
+                    <Grid Height="125">
+                        <Border CornerRadius="9 9 0 0" Background="{StaticResource Surface2}">
+                            <TextBlock Text="{Binding Initial}" FontSize="40" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextMuted}" Opacity="0.6"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border CornerRadius="9 9 0 0">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding Image}" Stretch="UniformToFill"/>
+                            </Border.Background>
+                        </Border>
+                    </Grid>
+                    <StackPanel Margin="12 10 12 12">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Height="36"
+                                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                   LineHeight="18" LineStackingStrategy="BlockLineHeight"/>
+                        <TextBlock Text="{Binding Domain}" FontSize="12" Style="{StaticResource Muted}"
+                                   Margin="0 6 0 0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="52"/>
+        </Grid.RowDefinitions>
+
+        <!-- Dark panel over the gradient; its bottom-right corner is cut round in code-behind -->
+        <Grid x:Name="panel" Grid.Row="0" Background="{StaticResource Bg}" SizeChanged="Panel_SizeChanged">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title and corner buttons -->
+            <DockPanel Grid.Row="0">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Style="{StaticResource CornerButton}" Click="About_Click" ToolTip="About"
+                            AutomationProperties.Name="About" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Grid>
+                            <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="15"/>
+                            <Ellipse Style="{StaticResource UpdateDot}" Width="8" Height="8" Fill="{StaticResource Warning}"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 -3 -5 0"/>
+                        </Grid>
+                    </Button>
+                    <Button Style="{StaticResource CornerButton}" Click="Minimize_Click" ToolTip="Minimize"
+                            AutomationProperties.Name="Minimize" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <TextBlock Text="&#xE921;" Style="{StaticResource Icon}" FontSize="12"/>
+                    </Button>
+                    <Button Style="{StaticResource CornerButton}" Click="Maximize_Click" ToolTip="Maximize or restore"
+                            AutomationProperties.Name="Maximize" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <TextBlock Style="{StaticResource MaximizeGlyph}" FontSize="12"/>
+                    </Button>
+                    <Button Style="{StaticResource CloseButton}" Click="Close_Click" ToolTip="Close"
+                            AutomationProperties.Name="Close" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <TextBlock Text="&#xE8BB;" Style="{StaticResource Icon}" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="24 0 0 0" VerticalAlignment="Center">
+                    <Image Source="/Assets/app.png" Width="24" Height="24" Margin="0 2 10 0"/>
+                    <TextBlock Text="CrackDigger Sample" FontFamily="{StaticResource TitleFont}" FontSize="22"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </DockPanel>
+
+            <!-- Search and site chips -->
+            <StackPanel Grid.Row="1" Margin="24 10 24 10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="searchBox" Grid.Column="0" Height="44" Style="{StaticResource SearchBox}"
+                             Tag="Game name, like witcher 3"
+                             Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                            <KeyBinding Key="Escape" Command="{Binding StopCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Grid Grid.Column="1" Margin="16 0 0 0" Width="120" Height="44">
+                        <Button Content="Search" Style="{StaticResource SearchButton}" Command="{Binding SearchCommand}"/>
+                        <Button Content="Stop" Style="{StaticResource StopButton}" Command="{Binding StopCommand}"
+                                ToolTip="Stops waiting; sites that already answered stay"/>
+                    </Grid>
+                </Grid>
+
+                <DockPanel Margin="0 16 0 0">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12 2 0 0">
+                        <Button Content="All" Style="{StaticResource GhostButton}" Command="{Binding SelectAllSitesCommand}"/>
+                        <TextBlock Text="·" Style="{StaticResource Muted}" VerticalAlignment="Center"/>
+                        <Button Content="None" Style="{StaticResource GhostButton}" Command="{Binding SelectNoSitesCommand}"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding SiteOptions}" Focusable="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SiteOptionViewModel}">
+                                <ToggleButton Style="{StaticResource Chip}" Content="{Binding Domain}"
+                                              IsChecked="{Binding IsSelected}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </StackPanel>
+
+            <!-- SITES list and results -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="240"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{StaticResource Surface}" CornerRadius="10"
+                        Margin="16 4 0 20" Padding="10 14">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="SITES" Style="{StaticResource SectionTitle}" Margin="12 0 0 8"/>
+                        <ToggleButton DockPanel.Dock="Top" Style="{StaticResource AllRowVisibility}"
+                                      IsChecked="{Binding IsAllSelected, Mode=OneWay}" Command="{Binding ShowAllCommand}"
+                                      ToolTip="Show results from every site">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Cards.Count}" Style="{StaticResource Muted}"/>
+                                <TextBlock Text="All" FontWeight="SemiBold"/>
+                            </DockPanel>
+                        </ToggleButton>
+                        <ListBox ItemsSource="{Binding SiteStatuses}" SelectedItem="{Binding SelectedSite}"
+                                 ItemContainerStyle="{StaticResource SiteRow}"
+                                 Background="Transparent" BorderThickness="0" Padding="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:SiteStatusViewModel}">
+                                    <DockPanel ToolTip="{Binding ToolTip}" Background="Transparent">
+                                        <TextBlock Text="{Binding CountText}" Style="{StaticResource CountText}"/>
+                                        <Ellipse Style="{StaticResource StatusDot}"/>
+                                        <TextBlock Text="{Binding Domain}" TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{Binding Summary}" Style="{StaticResource Muted}" Margin="24 6 24 12"/>
+                    <ScrollViewer x:Name="resultsScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24 0 10 40" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding CardsView}" ItemTemplate="{StaticResource CardTemplate}" Focusable="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <TextBlock Grid.Row="0" Grid.RowSpan="2" Text="{Binding Message}" Style="{StaticResource CenterMessage}"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- Footer on the gradient band -->
+        <DockPanel Grid.Row="1" Margin="24 0">
+            <Button DockPanel.Dock="Right" Style="{StaticResource BandLink}" Content="{Binding RepositoryLabel}"
+                    Command="{Binding OpenLinkCommand}" CommandParameter="{x:Static local:AppLinks.Repository}"
+                    ToolTip="{x:Static local:AppLinks.Repository}"/>
+            <TextBlock Text="{Binding LibraryLabel}" VerticalAlignment="Center"/>
+        </DockPanel>
+    </Grid>
+</Window>
